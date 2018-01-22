@@ -22,21 +22,27 @@ A Kinematic model was used for the controller. Tire force and gravity are ignore
 
 Where:
 
-x, y : Car's position.
+dt is the time interval
 
-psi : Car's heading direction.
+x, y is the x and y coordinates of Car's position.
 
-v : Car's velocity.
+psi is car's heading direction.
 
-cte : Cross-track error.
+v is velocity.
 
-epsi : Orientation error.
+cte is cross-track error.
 
-Those values are considered the state of the model. In addition to that, Lf is the distance between the car of mass and the front wheels (this is provided by Udacity's seed project). The other two values are the model output:
+epsi is orientation error.
 
-a : Car's acceleration (throttle).
-Steering angle.
-The objective is to find the acceleration (a) and the steering angle(delta) in the way it will minimize an objective function that is the combination of different factors:
+Lf is the distance between the car of mass and the front wheels. 
+
+## MPC 
+One of the most important tasks was to tune parameters of the cost function and other parameters for the Model Predictive Controller.
+
+First of all, data about waypoints was transformed into the vehicle space and a 3d order polynomial was fitted to the data. Actual state of the vehicle was "shifted" into the future by 100 ms latency. It helps to reduce negative effects of the latency and increase stability of the controller. The latency was introduced to simulate real delay of a human driver or physical actuators in case of a self driving car. Cross track error and orientation error were calculated, is then they were passed into the MPC routine.
+
+The time horizon (T) was chosen to 2 s after experiments. It was shown that the MPC could drive safely around the track with T = 1 s, but on a slow speed. Higher speed requires more future information to make smart decisions in serial turns. Time step duration (dt) was setted equal to the latancy of the simulation (0.1 s), hense, 20 time steps (N) was used.
+
 
 ## Dependencies
 
