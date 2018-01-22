@@ -135,7 +135,7 @@ int main() {
           double psi_1 = psi0 - ( velocity * steering_angle * delay / mpc.Lf );
           double v_1 = velocity + throttle * delay;
           double cte_1 = cte0 + ( velocity * sin(epsi0) * delay );
-          double epsi_1 = epsi0 - ( velocity * atan(coeffs[1]) * delay / mpc.Lf );
+          double epsi_1 = epsi0 - ( velocity * steering_angle * delay / mpc.Lf );
 
           // Define the state vector.
           Eigen::VectorXd state(6);
