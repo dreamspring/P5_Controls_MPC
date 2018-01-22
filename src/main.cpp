@@ -90,7 +90,9 @@ int main() {
           double px = j[1]["x"];
           double py = j[1]["y"];
           double psi = j[1]["psi"];
-          double v = j[1]["speed"];
+          double velocity = j[1]["speed"];
+          double steering_angle= j[1]["steering_angle"];
+          double throttle = j[1]["throttle"];
 
           /*
           * TODO: Calculate steering angle and throttle using MPC.
@@ -98,8 +100,52 @@ int main() {
           * Both are in between [-1, 1].
           *
           */
-          double steer_value;
-          double throttle_value;
+
+          // Preprocessing.
+          // Transforms waypoints coordinates to the vehicle coordinates.
+          size_t N_points = ptsx.size();
+          auto px_vehicle = Eigen::VectorXd(N_points);
+          auto py_vehicle = Eigen::VectorXd(N_points);
+          for (unsigned int i = 0; i < N_points; i++ ) {
+            double dX = ptsx[i] - px;
+            double dY = ptsy[i] - py;
+            px_vehicle( i ) = dX * cos( - psi ) - dY * sin( - psi );
+            py_vehicle( i ) = dX * sin( - psi ) + dY * cos( - psi );
+          }
+
+          // Fit polynomial to the points - 3rd order.
+          auto coeffs = polyfit(px_vehicle, py_vehicle, 3);
+
+          // Actuator delay in milliseconds.
+          const int actuatorDelay =  100;
+
+          // Actuator delay in seconds.
+          const double delay = actuatorDelay / 1000.0;
+
+          // Initial state.
+          const double x0 = 0;
+          const double y0 = 0;
+          const double psi0 = 0;
+          const double cte0 = coeffs[0];
+          const double epsi0 = -atan(coeffs[1]);
+
+          // State after delay.
+          double x_1 = x0 + ( velocity * cos(psi0) * delay );
+          double y_1 = y0 + ( velocity * sin(psi0) * delay );
+          double psi_1 = psi0 - ( velocity * steering_angle * delay / mpc.Lf );
+          double v_1 = velocity + throttle * delay;
+          double cte_1 = cte0 + ( velocity * sin(epsi0) * delay );
+          double epsi_1 = epsi0 - ( velocity * atan(coeffs[1]) * delay / mpc.Lf );
+
+          // Define the state vector.
+          Eigen::VectorXd state(6);
+          state << x_1, y_1, psi_1, v_1, cte_1, epsi_1;
+
+          // Find the MPC solution.
+          auto solution_mpc = mpc.Solve(state, coeffs);
+
+          double steer_value = solution_mpc[0]/deg2rad(25);
+          double throttle_value = solution_mpc[1];
 
           json msgJson;
           // NOTE: Remember to divide by deg2rad(25) before you send the steering value back.
@@ -107,9 +153,17 @@ int main() {
           msgJson["steering_angle"] = steer_value;
           msgJson["throttle"] = throttle_value;
 
-          //Display the MPC predicted trajectory 
+          //Display the MPC predicted trajectory
           vector<double> mpc_x_vals;
           vector<double> mpc_y_vals;
+
+          for ( int i = 2; i < solution_mpc.size(); i++ ) {
+            if ( i % 2 == 0 ) {
+              mpc_x_vals.push_back( solution_mpc[i] );
+            } else {
+              mpc_y_vals.push_back( solution_mpc[i] );
+            }
+          }
 
           //.. add (x,y) points to list here, points are in reference to the vehicle's coordinate system
           // the points in the simulator are connected by a Green line
@@ -121,6 +175,14 @@ int main() {
           vector<double> next_x_vals;
           vector<double> next_y_vals;
 
+          double poly_inc = 2.5;
+          int num_points = 25;
+          for ( int i = 0; i < num_points; i++ ) {
+            double x = poly_inc * i;
+            next_x_vals.push_back( x );
+            next_y_vals.push_back( polyeval(coeffs, x) );
+          }
+
           //.. add (x,y) points to list here, points are in reference to the vehicle's coordinate system
           // the points in the simulator are connected by a Yellow line
 
@@ -129,7 +191,7 @@ int main() {
 
 
           auto msg = "42[\"steer\"," + msgJson.dump() + "]";
-          std::cout << msg << std::endl;
+          // std::cout << msg << std::endl;
           // Latency
           // The purpose is to mimic real driving conditions where
           // the car does actuate the commands instantly.
@@ -139,7 +201,7 @@ int main() {
           //
           // NOTE: REMEMBER TO SET THIS TO 100 MILLISECONDS BEFORE
           // SUBMITTING.
-          this_thread::sleep_for(chrono::milliseconds(100));
+          this_thread::sleep_for(chrono::milliseconds(actuatorDelay));
           ws.send(msg.data(), msg.length(), uWS::OpCode::TEXT);
         }
       } else {
