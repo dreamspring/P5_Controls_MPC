@@ -37,11 +37,12 @@ epsi is orientation error.
 Lf is the distance between the car of mass and the front wheels. 
 
 ## MPC 
-One of the most important tasks was to tune parameters of the cost function and other parameters for the Model Predictive Controller.
 
 The number of watpoints(N) and the time interval(dt) define the prediction time horizon. The time horizon T was chosen to 1s. The number of points impacts the controller performance as well. Time step interval dt was set to the latancy of the simulation 100 ms. Number of waypoints N is 10.
 
 The waypoints data from the simulator are transformed to the vehicle coordinate system. Then a 3rd-degree polynomial is used to fit the waypoints. Cross-track error(cte) and orientation error(epsi) are calculated through the polynomial fitting. Then they are used by the MPC solver to calculate steer value and throttle value.
+
+In the Model Predictive Control that handles a 100 millisecond latency, the state values are calculated with given time interval 0.1s.  These state values are updated from the initial values. This part of code is implemented in main.cpp at line 130.
 
 ## Dependencies
 
