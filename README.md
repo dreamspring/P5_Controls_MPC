@@ -39,10 +39,9 @@ Lf is the distance between the car of mass and the front wheels.
 ## MPC 
 One of the most important tasks was to tune parameters of the cost function and other parameters for the Model Predictive Controller.
 
-First of all, data about waypoints was transformed into the vehicle space and a 3d order polynomial was fitted to the data. Actual state of the vehicle was "shifted" into the future by 100 ms latency. It helps to reduce negative effects of the latency and increase stability of the controller. The latency was introduced to simulate real delay of a human driver or physical actuators in case of a self driving car. Cross track error and orientation error were calculated, is then they were passed into the MPC routine.
+The number of watpoints(N) and the time interval(dt) define the prediction time horizon. The time horizon T was chosen to 1s. The number of points impacts the controller performance as well. Time step interval dt was set to the latancy of the simulation 100 ms. Number of waypoints N is 10.
 
-The time horizon (T) was chosen to 2 s after experiments. It was shown that the MPC could drive safely around the track with T = 1 s, but on a slow speed. Higher speed requires more future information to make smart decisions in serial turns. Time step duration (dt) was setted equal to the latancy of the simulation (0.1 s), hense, 20 time steps (N) was used.
-
+The waypoints data from the simulator are transformed to the vehicle coordinate system. Then a 3rd-degree polynomial is used to fit the waypoints. Cross-track error(cte) and orientation error(epsi) are calculated through the polynomial fitting. Then they are used by the MPC solver to calculate steer value and throttle value.
 
 ## Dependencies
 
