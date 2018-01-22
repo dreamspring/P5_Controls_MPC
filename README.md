@@ -3,6 +3,41 @@ Self-Driving Car Engineer Nanodegree Program
 
 ---
 
+## Implementation of Model
+
+A Kinematic model was used for the controller. Tire force and gravity are ignored in this model.The model equations are as follow:
+
+          x_next = x_i + v * cos(psi_i) * dt;
+          
+          y_next = y_i + v * sin(psi_i) * dt;
+          
+          psi_next = psi_i - v * steering_angle * dt / mpc.Lf;
+          
+          v_next = v + throttle * dt;
+          
+          cte_next = cte_i + v * sin(epsi_i) * dt;
+          
+          epsi_next = epsi_i - v * steering_angle * dt / mpc.Lf; 
+          
+
+Where:
+
+x, y : Car's position.
+
+psi : Car's heading direction.
+
+v : Car's velocity.
+
+cte : Cross-track error.
+
+epsi : Orientation error.
+
+Those values are considered the state of the model. In addition to that, Lf is the distance between the car of mass and the front wheels (this is provided by Udacity's seed project). The other two values are the model output:
+
+a : Car's acceleration (throttle).
+Steering angle.
+The objective is to find the acceleration (a) and the steering angle(delta) in the way it will minimize an objective function that is the combination of different factors:
+
 ## Dependencies
 
 * cmake >= 3.5
