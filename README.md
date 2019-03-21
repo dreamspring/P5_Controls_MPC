@@ -34,7 +34,7 @@ cte is cross-track error.
 
 epsi is orientation error.
 
-Lf is the distance between the car of mass and the front wheels. 
+Lf is the distance between the center of mass and the front wheels. 
 
 ## MPC 
 
