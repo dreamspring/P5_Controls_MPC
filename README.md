@@ -79,3 +79,10 @@ In the Model Predictive Control that handles a 100 millisecond latency, the stat
 3. Compile: `cmake .. && make`
 4. Run it: `./mpc`.
 
+To run the code:
+
+Set the build directory as current directory, then run ./pid.
+
+The following words will be shown on screen: Listening to port 4567.
+
+Then run the simulator. In the main menu screen select Project 5: MPC Controller
